@@ -1,29 +1,48 @@
 <script setup lang="ts">
 import { toRef } from "vue";
 import { useField } from "vee-validate";
-type Props = {
-  type?: string;
-  value?: string;
-  name: string;
-  label: string;
-  successMessage?: string;
-  placeholder?: string;
-};
 
-const props = withDefaults(defineProps<Props>(), {
-  type: "text",
-  value: "",
-  successMessage: "",
-  placeholder: "",
+const props = defineProps({
+  type: {
+    type: String,
+    default: "text",
+  },
+  value: {
+    type: String,
+    default: "",
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  label: {
+    type: String,
+    required: true,
+  },
+  successMessage: {
+    type: String,
+    default: "",
+  },
+  placeholder: {
+    type: String,
+    default: "",
+  },
 });
-const inputName = toRef(props, "name");
+
+// use `toRef` to create reactive references to `name` prop which is passed to `useField`
+// this is important because vee-validte needs to know if the field name changes
+// https://vee-validate.logaretm.com/v4/guide/composition-api/caveats
+const name = toRef(props, "name");
+
+// we don't provide any rules here because we are using form-level validation
+// https://vee-validate.logaretm.com/v4/guide/validation#form-level-validation
 const {
   value: inputValue,
   errorMessage,
   handleBlur,
   handleChange,
   meta,
-} = useField(inputName, undefined, {
+} = useField(name, undefined, {
   initialValue: props.value,
 });
 </script>
@@ -33,9 +52,9 @@ const {
     class="TextInput"
     :class="{ 'has-error': !!errorMessage, success: meta.valid }"
   >
-    <label :for="inputName">{{ label }}</label>
+    <label :for="name">{{ label }}</label>
     <input
-      :name="inputName"
+      :name="name"
       :id="name"
       :type="type"
       :value="inputValue"
@@ -45,7 +64,7 @@ const {
     />
 
     <p class="help-message" v-show="errorMessage || meta.valid">
-      {{ errorMessage || props.successMessage }}
+      {{ errorMessage || successMessage }}
     </p>
   </div>
 </template>
